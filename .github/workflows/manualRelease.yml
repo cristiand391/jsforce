@@ -25,15 +25,15 @@ jobs:
         run: |
           rm -rf docs
           git worktree prune
-          git fetch origin gh-pages:gh-pages
-          git worktree add docs gh-pages
+          git fetch origin gh-pages-test:gh-pages-test
+          git worktree add docs gh-pages-test
           npm run docs
       - name: send to git
         run: |
           cd docs
           git add .
           git commit -m 'docs: publishing gh-pages [skip ci]' --no-verify
-          git push origin gh-pages --no-verify
+          git push origin gh-pages-test --no-verify
     env:
       GITHUB_TOKEN: ${{ secrets.SVC_CLI_BOT_JSFORCE_GITHUB_TOKEN }}
 
