@@ -20,6 +20,8 @@ jobs:
           cache: npm
       - name: install deps
         run: npm install
+      - name: build
+        run: npm run clean && npm run build
       - uses: salesforcecli/github-workflows/.github/actions/gitConfig@main
       - name: build docs
         run: |
