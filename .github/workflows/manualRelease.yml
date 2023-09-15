@@ -10,6 +10,14 @@ jobs:
     if: github.ref_name == 'cd/api-docs'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.SVC_CLI_BOT_JSFORCE_GITHUB_TOKEN }}
+          ref: ${{ github.ref }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: npm
       - name: install deps
         run: npm install
       - uses: salesforcecli/github-workflows/.github/actions/gitConfig@main
