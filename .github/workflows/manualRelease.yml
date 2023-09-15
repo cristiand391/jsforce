@@ -6,43 +6,66 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
+  docs:
+    if: github.ref_name == 'cd/api-docs'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.SVC_CLI_BOT_JSFORCE_GITHUB_TOKEN }}
-          ref: ${{ github.ref }}
-      - uses: actions/setup-node@v3
-        with:
-          node-version: lts/*
-          cache: npm
-      - run: npm install
-      - name: Conventional Changelog Action
-        id: changelog
-        uses: TriPSs/conventional-changelog-action@d479ae227c5362744063d6bc7469352a0730fdcd
-        # overriding some of the basic behaviors to just get the changelog
-        with:
-          git-user-name: svc-cli-bot
-          git-user-email: svc_cli_bot@salesforce.com
-          github-token: ${{ secrets.SVC_CLI_BOT_JSFORCE_GITHUB_TOKEN }}
-          output-file: false
-          pre-commit: ./scripts/build.js
-          pre-release: true
-          pre-release-identifier: 'beta'
-          # always do the release, even if there are no semantic commits
-          skip-on-empty: false
-          tag-prefix: ''
-      - uses: notiz-dev/github-action-json-property@2192e246737701f108a4571462b76c75e7376216
-        id: packageVersion
-        with:
-          path: 'package.json'
-          prop_path: 'version'
-      - name: Create Github Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.SVC_CLI_BOT_JSFORCE_GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.packageVersion.outputs.prop }}
-          release_name: ${{ steps.packageVersion.outputs.prop }}
-          prerelease: true
+      - name: install deps
+        run: npm install
+      - uses: salesforcecli/github-workflows/.github/actions/gitConfig@main
+      - name: build docs
+        run: |
+          rm -rf docs
+          git worktree prune
+          git fetch origin gh-pages:gh-pages
+          git worktree add docs gh-pages
+          npm run docs
+      - name: send to git
+        run: |
+          cd docs
+          git add .
+          git commit -m 'docs: publishing gh-pages [skip ci]' --no-verify
+          git push origin gh-pages --no-verify
+    env:
+      GITHUB_TOKEN: ${{ secrets.SVC_CLI_BOT_JSFORCE_GITHUB_TOKEN }}
+
+  # release:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         token: ${{ secrets.SVC_CLI_BOT_JSFORCE_GITHUB_TOKEN }}
+  #         ref: ${{ github.ref }}
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: lts/*
+  #         cache: npm
+  #     - run: npm install
+  #     - name: Conventional Changelog Action
+  #       id: changelog
+  #       uses: TriPSs/conventional-changelog-action@d479ae227c5362744063d6bc7469352a0730fdcd
+  #       # overriding some of the basic behaviors to just get the changelog
+  #       with:
+  #         git-user-name: svc-cli-bot
+  #         git-user-email: svc_cli_bot@salesforce.com
+  #         github-token: ${{ secrets.SVC_CLI_BOT_JSFORCE_GITHUB_TOKEN }}
+  #         output-file: false
+  #         pre-commit: ./scripts/build.js
+  #         pre-release: true
+  #         pre-release-identifier: 'beta'
+  #         # always do the release, even if there are no semantic commits
+  #         skip-on-empty: false
+  #         tag-prefix: ''
+  #     - uses: notiz-dev/github-action-json-property@2192e246737701f108a4571462b76c75e7376216
+  #       id: packageVersion
+  #       with:
+  #         path: 'package.json'
+  #         prop_path: 'version'
+  #     - name: Create Github Release
+  #       uses: actions/create-release@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.SVC_CLI_BOT_JSFORCE_GITHUB_TOKEN }}
+  #       with:
+  #         tag_name: ${{ steps.packageVersion.outputs.prop }}
+  #         release_name: ${{ steps.packageVersion.outputs.prop }}
+  #         prerelease: true
