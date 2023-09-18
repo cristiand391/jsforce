@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.SVC_CLI_BOT_JSFORCE_GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.ref }}
       - uses: actions/setup-node@v3
         with:
@@ -37,7 +37,7 @@ jobs:
           git commit -m 'docs: publishing gh-pages [skip ci]' --no-verify
           git push origin gh-pages --no-verify
     env:
-      GITHUB_TOKEN: ${{ secrets.SVC_CLI_BOT_JSFORCE_GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # release:
   #   runs-on: ubuntu-latest
